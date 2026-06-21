@@ -1,0 +1,31 @@
+:root {
+  /* Colors */
+  --primary: #7CB9A8;
+  --secondary: #A8D5BA;
+  --accent: #D8EFD3;
+
+  --background: #FAFAF5;
+  --card: #FFFFFF;
+
+  --text-primary: #2F3E46;
+  --text-secondary: #6B7280;
+
+  --success: #8FD694;
+  --warning: #F4C095;
+
+  /* Gradients */
+  --gradient-primary:
+    linear-gradient(
+      135deg,
+      #D8EFD3,
+      #A8D5BA,
+      #7CB9A8
+    );
+
+  --gradient-button:
+    linear-gradient(
+      135deg,
+      #7CB9A8,
+      #91C7B1
+    );
+}

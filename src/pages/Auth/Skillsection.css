@@ -1,0 +1,419 @@
+.sectionpage{
+ min-height:100vh;
+   background:
+  linear-gradient(
+    rgba(0,0,0,0.45),
+    rgba(0,0,0,0.45)
+  ),
+  url("../../assets/skil-sectionbg.png");
+  background-size:cover;
+
+  background-position:center;
+
+  background-repeat:no-repeat;
+  padding:30px 70px;
+  color:#F3F5F4;
+}
+
+
+
+/* ================= TOP SECTION ================= */
+
+.top-section{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  margin-bottom:40px;
+}
+
+.logo{
+  font-size:28px;
+  font-weight:700;
+ 
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.logo-icon{
+  color:#A8D5BA;
+}
+
+.progress{
+  padding:12px 22px;
+
+  background:
+  rgba(255,255,255,0.03);
+
+  border:
+  1px solid rgba(168,213,186,0.12);
+
+  border-radius:15px;
+}
+
+.progress p{
+  color:#A8D5BA;
+  font-size:15px;
+}
+
+/* ================= MAIN CARD ================= */
+
+.main-section{
+  width:100%;
+  min-height:85vh;
+
+  background:
+  rgba(8,17,13,0.55);
+
+  backdrop-filter:blur(20px);
+
+  border:
+  1px solid rgba(168,213,186,0.12);
+
+  border-radius:35px;
+
+  padding:40px;
+
+  box-shadow:
+  0 8px 40px rgba(0,0,0,0.4);
+}
+
+/* ================= HERO SECTION ================= */
+
+.first-section{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  margin-bottom:35px;
+}
+
+.left-section h2{
+  font-size:42px;
+  line-height:1.2;
+  margin-bottom:14px;
+}
+
+.left-section p{
+  color:#AAB7B8;
+  font-size:17px;
+  line-height:1.7;
+}
+
+.image{
+  width:220px;
+}
+
+/* ================= SEARCH ================= */
+
+.search-container{
+  width:100%;
+  margin-bottom:35px;
+  position:relative;
+}
+
+.search-box{
+  width:100%;
+  height:62px;
+
+  display:flex;
+  align-items:center;
+  gap:15px;
+
+  padding:0 25px;
+
+  border-radius:18px;
+
+  background:
+  rgba(255,255,255,0.03);
+
+  border:
+  1px solid rgba(168,213,186,0.12);
+
+  transition:0.3s;
+}
+
+.search-box:hover{
+  border:
+  1px solid rgba(168,213,186,0.25);
+}
+
+.search-box:focus-within{
+  border:
+  1px solid #7CB9A8;
+
+  box-shadow:
+  0 0 20px rgba(124,185,168,0.15);
+}
+
+.search-icon{
+  color:#7CB9A8;
+  font-size:18px;
+}
+
+.search-box input{
+  flex:1;
+  border:none;
+  outline:none;
+  background:none;
+
+  color:white;
+  font-size:16px;
+}
+
+.search-box input::placeholder{
+  color:#7A8784;
+}
+
+/* ================= SUGGESTIONS ================= */
+
+.suggestions{
+  width:100%;
+
+  position:absolute;
+  top:75px;
+
+  list-style:none;
+  padding:10px;
+  margin:0;
+
+  background:
+  rgba(8,17,13,0.95);
+
+  border-radius:20px;
+
+  border:
+  1px solid rgba(168,213,186,0.12);
+
+  z-index:100;
+}
+
+.suggestions li{
+  padding:15px 20px;
+  border-radius:12px;
+
+  cursor:pointer;
+
+  transition:0.3s;
+}
+
+.suggestions li:hover{
+  background:
+  rgba(124,185,168,0.12);
+
+  color:#A8D5BA;
+}
+
+/* ================= SKILLS SECTION ================= */
+
+.skills-section{
+  display:flex;
+  flex-direction:column;
+  gap:30px;
+}
+
+/* ================= GRID ================= */
+
+.skills-grid{
+  display:grid;
+
+  grid-template-columns:
+  repeat(4,1fr);
+
+  gap:22px;
+}
+
+/* ================= CARD ================= */
+
+.skill-card{
+  position:relative;
+
+  min-height:180px;
+
+  padding:22px;
+
+  border-radius:22px;
+
+  background:
+  rgba(255,255,255,0.02);
+
+  border:
+  1px solid rgba(168,213,186,0.12);
+
+  transition:0.3s;
+
+  cursor:pointer;
+}
+
+.skill-card:hover{
+  transform:translateY(-6px);
+
+  border:
+  1px solid rgba(124,185,168,0.3);
+
+  box-shadow:
+  0 0 20px rgba(124,185,168,0.1);
+}
+
+
+
+.skill-icon{
+  font-size:35px;
+  margin-bottom:20px;
+}
+
+.skill-card h4{
+  margin-bottom:12px;
+  font-size:18px;
+}
+
+.skill-card p{
+  color:#AAB7B8;
+  font-size:14px;
+  line-height:1.6;
+
+  margin-bottom:20px;
+}
+
+.explore{
+  color:#A8D5BA;
+  font-size:14px;
+}
+
+.tick{
+  position:absolute;
+  top:15px;
+  right:15px;
+
+  width:28px;
+  height:28px;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  border-radius:50%;
+
+  background:#A8D5BA;
+  color:#08110D;
+
+  font-weight:700;
+}
+
+/* ================= SELECTED ================= */
+
+.selected-skills{
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+}
+
+.selected-skills h3{
+  font-size:18px;
+}
+
+.selected-container{
+  display:flex;
+  flex-wrap:wrap;
+  gap:15px;
+}
+
+.selected-pill{
+  padding:12px 18px;
+
+  border-radius:30px;
+
+  background:
+  rgba(255,255,255,0.04);
+
+  border:
+  1px solid rgba(168,213,186,0.12);
+
+  color:#D8EFD3;
+
+  font-size:14px;
+}
+
+.clear-btn{
+  margin-left:auto;
+
+  background:none;
+  border:none;
+
+  color:#A8D5BA;
+  cursor:pointer;
+
+  font-size:15px;
+}
+
+/* ================= BUTTONS ================= */
+
+.bottom-buttons{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  margin-top:35px;
+}
+
+.back-btn{
+  width:140px;
+  height:55px;
+
+  border:none;
+  border-radius:18px;
+
+  background:
+  rgba(255,255,255,0.04);
+
+  color:white;
+
+  cursor:pointer;
+
+  transition:0.3s;
+}
+
+.back-btn:hover{
+  background:
+  rgba(255,255,255,0.08);
+}
+
+.continue-btn{
+  width:240px;
+  height:58px;
+
+  border:none;
+  border-radius:18px;
+
+  background:
+  linear-gradient(
+    135deg,
+    #7CB9A8,
+    #A8D5BA
+  );
+
+  color:#08110D;
+
+  font-size:16px;
+  font-weight:600;
+
+  cursor:pointer;
+
+  transition:0.3s;
+
+  box-shadow:
+  0 0 30px rgba(124,185,168,0.2);
+}
+
+.continue-btn:disabled{
+  opacity:0.5;
+  cursor:not-allowed;
+}
+
+.continue-btn:hover{
+  transform:translateY(-3px);
+
+  box-shadow:
+  0 0 40px rgba(124,185,168,0.35);
+}
