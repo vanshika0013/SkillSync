@@ -112,6 +112,13 @@ function Skillsection() {
   }
 };
 console.log(selectedSkills);
+function handleContinue() {
+    localStorage.setItem(
+      "selectedSkills",
+      JSON.stringify(selectedSkills)
+    );
+    navigate("/goals");
+  }
 
 const handleClear = () => {
   setSelectedSkills([]);
@@ -292,7 +299,7 @@ const handleClear = () => {
       ← Back
     </button>
 
-    <button className="continue-btn" disabled={selectedSkills.length==0} onClick={() => navigate("/goals")}>
+    <button className="continue-btn" disabled={selectedSkills.length==0} onClick={handleContinue}>
       Continue →
     </button>
 

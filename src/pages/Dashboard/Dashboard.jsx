@@ -1,98 +1,513 @@
 import "./Dashboard.css";
+import {useState , useEffect } from "react";
 
 function Dashboard() {
+  console.log(import.meta.env.VITE_GEMINI_API_KEY);
+  const hour= new Date().getHours();
+  let greeting;
+  if( hour<12){
+    greeting="Good Morning!";
+  }
+  else if (hour<17){
+    greeting="Good Afternoon!";
+  }
+  else{
+    greeting="Good Evening!";
+  }
+
+  const githubData = 
+  JSON.parse(localStorage.getItem("githubData")) || {};
+  const skills =
+  JSON.parse(localStorage.getItem("selectedSkills"));
+  const goals = 
+  JSON.parse(localStorage.getItem("selectedGoals"));
+  const [roadmap,setRoadmap] = useState([]);
+  const [loading, setLoading] = useState(false);
+   const [collapsed, setCollapsed] = useState(false);
+
+  const handleGenerateRoadmap = () => {
+
+    console.log(skills);
+    console.log(goals);
+  setLoading(true);
+  let generatedRoadmap = [];
+
+    if (skills.includes("Web Development")) {
+  generatedRoadmap.push({
+    phase:`Phase ${generatedRoadmap.length + 1}`,
+    title: "Web Development Path",
+    topics: [
+      "HTML",
+      "CSS",
+      "JavaScript",
+      "Responsive Design",
+      "Git & GitHub",
+      "React Basics",
+    ],
+    project:
+      "Build a Personal Portfolio Website",
+  });
+}
+
+if (skills.includes("Data Science")) {
+  generatedRoadmap.push({
+    phase:`Phase ${generatedRoadmap.length + 1}`,
+    title: "Data Science Path",
+    topics: [
+      "Python",
+      "NumPy",
+      "Pandas",
+      "Matplotlib",
+      "Data Cleaning",
+      "Statistics",
+    ],
+    project:
+      "Build a Data Analysis Dashboard",
+  });
+}
+
+if (skills.includes("AI / Machine Learning")) {
+  generatedRoadmap.push({
+    phase: `Phase ${generatedRoadmap.length + 1}`,
+    title: "AI & Machine Learning",
+    topics: [
+      "Python",
+      "Machine Learning Basics",
+      "Scikit-Learn",
+      "Deep Learning",
+      "TensorFlow",
+      "Model Deployment",
+    ],
+    project:
+      "Build an Image Classification App",
+  });
+}
+
+if (skills.includes("Cyber Security")) {
+  generatedRoadmap.push({
+    phase: `Phase ${generatedRoadmap.length + 1}`,
+    title: "Cyber Security",
+    topics: [
+      "Networking",
+      "Linux",
+      "Ethical Hacking",
+      "Cryptography",
+      "OWASP",
+      "Penetration Testing",
+    ],
+    project:
+      "Build a Password Security Checker",
+  });
+}
+
+if (skills.includes("Mobile Development")) {
+  generatedRoadmap.push({
+    phase: `Phase ${generatedRoadmap.length + 1}`,
+    title: "Mobile Development",
+    topics: [
+      "Flutter",
+      "Dart",
+      "UI Design",
+      "Firebase",
+      "State Management",
+      "API Integration",
+    ],
+    project:
+      "Build a ToDo Mobile App",
+  });
+}
+
+if (skills.includes("UI / UX Design")) {
+  generatedRoadmap.push({
+    phase: `Phase ${generatedRoadmap.length + 1}`,
+    title: "UI/UX Design",
+    topics: [
+      "Design Principles",
+      "Color Theory",
+      "Typography",
+      "Wireframing",
+      "Figma",
+      "Prototyping",
+    ],
+    project:
+      "Design a Food Delivery App Interface",
+  });
+}
+
+if (skills.includes("Cloud Computing")) {
+  generatedRoadmap.push({
+    phase: `Phase ${generatedRoadmap.length + 1}`,
+    title: "Cloud Computing",
+    topics: [
+      "AWS Basics",
+      "Linux",
+      "Docker",
+      "CI/CD",
+      "Cloud Deployment",
+      "DevOps Basics",
+    ],
+    project:
+      "Deploy a Full Stack Application",
+  });
+}
+
+if (skills.includes("Game Development")) {
+  generatedRoadmap.push({
+    phase: `Phase ${generatedRoadmap.length + 1}`,
+    title: "Game Development",
+    topics: [
+      "Unity",
+      "C#",
+      "Game Physics",
+      "Animations",
+      "Game Design",
+      "Optimization",
+    ],
+    project:
+      "Build a 2D Platformer Game",
+  });
+}
+
+if (skills.includes("DSA & Algorithms")) {
+  generatedRoadmap.push({
+    phase: `Phase ${generatedRoadmap.length + 1}`,
+    title: "DSA Mastery",
+    topics: [
+      "Arrays",
+      "Strings",
+      "Linked Lists",
+      "Trees",
+      "Graphs",
+      "Dynamic Programming",
+    ],
+    project:
+      "Solve 200+ Coding Problems",
+  });
+}
+
+if (skills.includes("DevOps")) {
+  generatedRoadmap.push({
+    phase: `Phase ${generatedRoadmap.length + 1}`,
+    title: "DevOps",
+    topics: [
+      "Linux",
+      "Docker",
+      "Git",
+      "GitHub Actions",
+      "Jenkins",
+      "Kubernetes",
+    ],
+    project:
+      "Build a CI/CD Pipeline",
+  });
+}
+
+if (skills.includes("Blockchain")) {
+  generatedRoadmap.push({
+    phase: `Phase ${generatedRoadmap.length + 1}`,
+    title: "Blockchain Development",
+    topics: [
+      "Solidity",
+      "Ethereum",
+      "Smart Contracts",
+      "Web3",
+      "DApps",
+      "Security",
+    ],
+    project:
+      "Build a Voting DApp",
+  });
+}
+
+if (skills.includes("Product Management")) {
+  generatedRoadmap.push({
+    phase: `Phase ${generatedRoadmap.length + 1}`,
+    title: "Product Management",
+    topics: [
+      "Market Research",
+      "User Stories",
+      "Roadmapping",
+      "Agile",
+      "Analytics",
+      "Leadership",
+    ],
+    project:
+      "Create a Product Requirement Document",
+  });
+}
+
+if (goals.includes("Get Internship")) {
+  generatedRoadmap.push({
+    phase: "Career Phase",
+    title: "Internship Preparation",
+    topics: [
+      "Resume Building",
+      "GitHub Portfolio",
+      "Projects",
+      "LinkedIn",
+      "Interview Preparation",
+    ],
+    project:
+      "Build and Deploy 3 Portfolio Projects",
+  });
+}
+
+if (goals.includes("Crack Placements")) {
+  generatedRoadmap.push({
+    phase: "Placement Phase",
+    title: "Placement Preparation",
+    topics: [
+      "DSA",
+      "OOPs",
+      "DBMS",
+      "Operating Systems",
+      "Computer Networks",
+      "Mock Interviews",
+    ],
+    project:
+      "Solve 150+ DSA Questions",
+  });
+}
+
+if (generatedRoadmap.length === 0) {
+  generatedRoadmap.push({
+    phase: "Getting Started",
+    title: "Begin Your Journey",
+    topics: [
+      "Choose a skill",
+      "Practice consistently",
+      "Build projects",
+      "Stay curious",
+    ],
+    project:
+      "Create your first beginner project",
+  });
+}
+
+  setRoadmap(generatedRoadmap);
+
+  setLoading(false);
+};
+
+const [streak,setStreak] = useState(1);
+
+useEffect(()=> {
+  const today = new Date().toDateString();
+
+  const lastVisit= localStorage.getItem("lastVisit");
+  let currentStreak= Number(localStorage.getItem("streak")) || 1;
+
+   if (!lastVisit) {
+    localStorage.setItem(
+      "lastVisit",
+      today
+    );
+
+    localStorage.setItem(
+      "streak",
+      1
+    );
+
+    setStreak(1);
+    return;
+  }
+ const last =
+  new Date(lastVisit);
+
+  const current =
+  new Date(today);
+
+  const diff =
+  Math.floor(
+    (
+      current - last
+    )
+    /
+    (
+      1000
+      *
+      60
+      *
+      60
+      *
+      24
+    )
+  );
+
+  if (diff === 1) {
+
+    currentStreak++;
+
+    localStorage.setItem(
+      "streak",
+      currentStreak
+    );
+
+    localStorage.setItem(
+      "lastVisit",
+      today
+    );
+
+  }
+
+  else if (diff > 1) {
+
+    currentStreak = 1;
+
+    localStorage.setItem(
+      "streak",
+      1
+    );
+
+    localStorage.setItem(
+      "lastVisit",
+      today
+    );
+  }
+
+  setStreak(
+    currentStreak
+  );
+}, []);
+
+    const[visitedDays,setVisitedDays]=useState([]);
+
+  useEffect(() => {
+
+  const currentDay =
+    new Date()
+      .toLocaleDateString(
+        "en-US",
+        {
+          weekday:"short"
+        }
+      );
+
+  let days =
+    JSON.parse(
+      localStorage.getItem(
+        "visitedDays"
+      )
+    ) || [];
+
+  if (
+    !days.includes(
+      currentDay
+    )
+  ) {
+
+    days.push(currentDay);
+
+    localStorage.setItem(
+      "visitedDays",
+      JSON.stringify(days)
+    );
+  }
+
+  setVisitedDays(days);
+
+}, []);
+
   return (
     <div className="dashboard-page">
 
       {/* Sidebar */}
 
-      <aside className="sidebar">
+      <aside className={ 
+        collapsed ? "sidebar collapsed" : "sidebar"
+      }>
 
         <div className="sidebar-top">
 
-          <div className="logo">
-            🌿 SkillSync
-          </div>
+  <div className="logo">
+    <span>&lt;/&gt;</span>
 
-          <button className="collapse-btn">
-            ❮❮
-          </button>
+    {!collapsed &&
+    <span>SkillSync</span>}
+  </div>
 
-        </div>
+</div>
+
+<button
+  className="collapse-btn"
+  onClick={() => setCollapsed(!collapsed)}
+>
+  {collapsed ? "❯" : "❮"}
+</button>
 
         <ul className="sidebar-menu">
 
           <li className="active">
-            🏠 Dashboard
+            <span>🏠</span>
+            {!collapsed && 
+            <span>Dashboard</span>
+            }
           </li>
 
           <li>
-            🗺️ Roadmap
+            <span>🗺️</span>
+            {!collapsed && 
+            <span>Roadmap</span>}
           </li>
 
           <li>
-            📈 Progress
+           <span>📈</span> 
+           {!collapsed && 
+           <span>Stats</span>}
           </li>
 
           <li>
-            📚 Resources
+            <span>📚</span>
+            {!collapsed && 
+            <span>Resources</span>}
           </li>
 
           <li>
-            💼 Projects
+            <span>💼</span>
+            {!collapsed && 
+            <span>Projects</span>}
           </li>
 
           <li>
-            📝 Notes
+            <span>📝</span>
+            {!collapsed && 
+            <span>Notes</span>}
           </li>
 
           <li>
-            ⚙️ Settings
+            <span>⚙️</span>
+            {!collapsed && 
+            <span>Settings</span>}
           </li>
 
         </ul>
-
-        {/* Upgrade Card */}
-
-        <div className="upgrade-card">
-
-          <h3>
-            🌿 Upgrade to Pro
-          </h3>
-
-          <p>
-            Unlock AI roadmap,
-            advanced analytics and more.
-          </p>
-
-          <button>
-            Upgrade Now →
-          </button>
-
-        </div>
-
         {/* User */}
 
         <div className="sidebar-user">
 
-          <img
-            src="https://i.pravatar.cc/100"
-            alt=""
-          />
+  <img
+    src={
+      githubData?.avatar_url ||
+      "https://i.pravatar.cc/100"
+    }
+    alt=""
+  />
 
-          <div>
+  {
+    !collapsed &&
+    <div>
+      <h4>
+        {githubData?.name ||
+         githubData?.login}
+      </h4>
 
-            <h4>
-              Vanshika
-            </h4>
+      <p>
+        vanshika@example.com
+      </p>
+    </div>
+  }
 
-            <p>
-              vanshika@example.com
-            </p>
-
-          </div>
-
-        </div>
+</div>
 
       </aside>
 
@@ -114,12 +529,12 @@ function Dashboard() {
             <div className="top-user">
 
               <img
-                src=""
+                src={githubData?.avatar_url || "https://i.pravatar.cc/100"}
                 alt=""
               />
 
               <span>
-                Vanshika
+                {githubData?.name || githubData?.login}
               </span>
 
             </div>
@@ -135,8 +550,8 @@ function Dashboard() {
           <div>
 
             <h1>
-              Good Evening,
-              Vanshika 🌿
+              {greeting}{" "}
+               {githubData?.name || githubData?.login} 
             </h1>
 
             <p>
@@ -166,22 +581,22 @@ function Dashboard() {
             <div className="stats-grid">
 
               <div className="stat-card">
-                <h2>12</h2>
-                <p>Skills Learned</p>
+                <h2>{skills.length}</h2>
+                <p>Skills Selected</p>
               </div>
 
               <div className="stat-card">
-                <h2>3</h2>
+                <h2>{goals.length}</h2>
                 <p>Goals Selected</p>
               </div>
 
               <div className="stat-card">
-                <h2>18 🔥</h2>
+                <h2>{streak}</h2>
                 <p>Day Streak</p>
               </div>
 
               <div className="stat-card">
-                <h2>7</h2>
+                <h2>{githubData?.public_repos || 0}</h2>
                 <p>Projects Built</p>
               </div>
 
@@ -237,9 +652,48 @@ function Dashboard() {
                 based on your goals and skills.
               </p>
 
-              <button>
+              <button onClick={handleGenerateRoadmap}>
                 🚀 Generate My Roadmap
               </button>
+              {
+                loading &&
+                <p>Generating roadmap...</p>
+              }
+
+              {
+  roadmap.map((item, index) => (
+    <div
+      className="phase-card"
+      key={index}
+    >
+      <h3>
+        {item.phase}
+      </h3>
+
+      <h4>
+        {item.title}
+      </h4>
+
+      <ul>
+        {
+          item.topics.map(
+            (topic, i) => (
+              <li key={i}>
+                {topic}
+              </li>
+            )
+          )
+        }
+      </ul>
+
+      <p className="project">
+        💡 Project:
+        {" "}
+        {item.project}
+      </p>
+    </div>
+  ))
+}
 
             </section>
 
@@ -338,28 +792,32 @@ function Dashboard() {
               </div>
 
               <img
-                src="https://avatars.githubusercontent.com/u/583231?v=4"
+                src={githubData?.avatar_url}
                 alt=""
               />
 
               <h2>
-                vanshika-code
-              </h2>
+                  {githubData?.name || githubData?.login}
+                </h2>
+
+                <p>
+                  @{githubData?.login}
+                </p>
 
               <div className="github-stats">
 
                 <div>
-                  <h3>42</h3>
+                  <h3>{githubData?.public_repos}</h3>
                   <p>Repos</p>
                 </div>
 
                 <div>
-                  <h3>156</h3>
+                  <h3>{githubData?.followers}</h3>
                   <p>Followers</p>
                 </div>
 
                 <div>
-                  <h3>102</h3>
+                  <h3>{githubData?.following}</h3>
                   <p>Following</p>
                 </div>
 
@@ -378,20 +836,35 @@ function Dashboard() {
                 </h2>
 
                 <span>
-                  18 days
+                  {streak} {streak===1  ? "day" : "days"} 
                 </span>
 
               </div>
 
               <div className="days">
 
-                <span>Mon</span>
-                <span>Tue</span>
-                <span>Wed</span>
-                <span>Thu</span>
-                <span>Fri</span>
-                <span>Sat</span>
-                <span>Sun</span>
+                {
+                  [
+                    "Mon",
+                    "Tue",
+                    "Wed",
+                    "Thurs",
+                    "Fri",
+                    "Sat",
+                    "Sun"
+                  ].map((day) =>(
+                    <span
+                    key={day}
+                    className={
+                      visitedDays.includes(day)
+                      ?"visited"
+                      : ""
+                    }
+                    >
+                      {day}
+                    </span>
+                  ))
+                }
 
               </div>
 

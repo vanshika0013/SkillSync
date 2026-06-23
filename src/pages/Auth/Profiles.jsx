@@ -65,12 +65,12 @@ function Profiles() {
 
       <nav className="navbar">
         <div className="logo">
-          💻 SkillSync
+          <span>&lt;/&gt;</span> SkillSync
         </div>
 
         <div className="steps">
           <span>Welcome</span>
-          <span>Skills</span>
+          <span onClick={()=> navigate("/skillsection")}>Skills</span>
           <span>Goals</span>
           <span className="active">
             Profiles

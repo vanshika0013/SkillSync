@@ -6,6 +6,14 @@ import { useNavigate } from "react-router-dom";
 import "./Skillsection.jsx";
 import "./Profiles.jsx";
 function Goals(){
+  function handleContinue() {
+  localStorage.setItem(
+    "selectedGoals",
+    JSON.stringify(selectedGoals)
+  );
+
+  navigate("/profiles");
+}
   const navigate = useNavigate();
   const goalCards =[
     {
@@ -71,6 +79,7 @@ function Goals(){
     
   ];
   const[selectedGoals,setSelectedGoals]=useState([]);
+ 
   const handleGoalClick = (goal) => {
   if (selectedGoals.includes(goal)) {
     setSelectedGoals(
@@ -90,7 +99,7 @@ function Goals(){
 
   <nav className="navbar">
     <div className="logo">
-      💻 SkillSync
+      <span>&lt;/&gt;</span> SkillSync
     </div>
 
     <div className="steps">
@@ -185,7 +194,7 @@ function Goals(){
 
        
 
-        <button className="continue-btn" disabled={selectedGoals.length==0} onClick={() => navigate("/profiles")}>
+        <button className="continue-btn" disabled={selectedGoals.length==0} onClick={handleContinue}>
           Continue →
         </button>
 
