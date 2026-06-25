@@ -8,6 +8,8 @@ import Achieve from "../../assets/Achieve.png";
 import background from "../../assets/background.png"
 import { useState } from "react";
 import {useNavigate} from "react-router-dom";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../firebase";
 function Login() {
   const [email,setEmail]= useState("");
   const [password,setPassword]= useState("");
@@ -17,7 +19,7 @@ function Login() {
   console.log(password);
   console.log(rememberMe);
 
-  const handleSubmit= (e) => {
+  const handleSubmit= async (e) => {
     e.preventDefault();
     if(email.trim()===""){
       alert("Enter Email first");
@@ -35,12 +37,28 @@ function Login() {
       alert("Enter stronger password");
       return;
     }
-    console.log("Form submitted");
-    navigate("/Skillsection");
-    console.log(email);
-    console.log(password);
-    console.log(rememberMe);
+
+    try{
+      const userCredential =
+  await signInWithEmailAndPassword(
+    auth,
+    email,
+    password
+  );
+  
+    }
+    
+    catch(error){
+    console.log(error);
+    alert("Invalid email or password ");
+    return;
+  };
+  console.log("Form submitted");
+    navigate("/Dashboard");
+    
   }
+
+  localStorage.getItem("email")
   return (
  <div className="login-page">
   <div className="left-panel">

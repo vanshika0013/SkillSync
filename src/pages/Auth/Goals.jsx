@@ -1,6 +1,6 @@
 import "./Goals.css";
 import background4 from "../../assets/background4.png";
-import { useState } from "react";
+import { useState , useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import "./Skillsection.jsx";
@@ -79,6 +79,14 @@ function Goals(){
     
   ];
   const[selectedGoals,setSelectedGoals]=useState([]);
+  useEffect(() => {
+  const savedGoals =
+    JSON.parse(
+      localStorage.getItem("selectedGoals")
+    ) || [];
+
+  setSelectedGoals(savedGoals);
+}, []);
  
   const handleGoalClick = (goal) => {
   if (selectedGoals.includes(goal)) {

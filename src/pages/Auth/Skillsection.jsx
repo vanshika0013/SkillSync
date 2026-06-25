@@ -1,7 +1,7 @@
 import skillSectionbg from "../../assets/skil-sectionbg.png";
 import "./Skillsection.css";
 import computer from "../../assets/computer.png";
-import { useState } from "react";
+import { useState , useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
 import "./Goals.jsx";
 import { useNavigate } from "react-router-dom";
@@ -97,6 +97,14 @@ function Skillsection() {
       .includes(search.toLowerCase())
   );
   const [selectedSkills,setSelectedSkills]= useState([]);
+  useEffect(() => {
+  const savedSkills =
+    JSON.parse(
+      localStorage.getItem("selectedSkills")
+    ) || [];
+
+  setSelectedSkills(savedSkills);
+}, []);
   const handleSkillClick = (skill) => {
   if (selectedSkills.includes(skill)) {
     setSelectedSkills(

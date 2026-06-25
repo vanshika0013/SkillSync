@@ -7,6 +7,8 @@ import Skillsection from "./pages/Auth/Skillsection";
 import Goals from "./pages/Auth/Goals";
 import Landing from "./pages/Auth/Landing";
 import Profiles from "./pages/Auth/Profiles";
+import Notes from "./pages/Auth/Notes";
+import Settings from "./pages/Auth/Settings";
 
 function App() {
   return (
@@ -20,6 +22,8 @@ function App() {
         <Route path="/skillsection" element={<Skillsection/>} />
         <Route path="/goals" element={<Goals/>} />
         <Route path="/profiles" element={<Profiles/>} />
+        <Route path="/notes" element={<Notes/>} />
+        <Route path="/settings" element={<Settings/>} />
       </Routes>
 
 

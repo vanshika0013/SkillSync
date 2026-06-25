@@ -794,3 +794,31 @@
   box-shadow:
     0 0 18px rgba(132,225,159,0.45);
 }
+
+.quote-icon{
+  color:#84e19f;
+  font-size:2rem;
+}
+
+.stat-card.clickable{
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.stat-card.clickable:hover{
+  transform: translateY(-5px);
+  border: 1px solid #84e19f;
+  box-shadow: 0 12px 30px rgba(132,225,159,0.15);
+}
+
+.user-info{
+  min-width: 0;
+}
+
+.user-info p{
+  font-size: 0.75rem;
+  color: #9aa0a6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

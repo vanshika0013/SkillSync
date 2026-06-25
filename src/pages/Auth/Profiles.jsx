@@ -40,12 +40,14 @@ function Profiles() {
     setError("");
 
     const response= await fetch(`https://api.github.com/users/${github}`);
+    // const response2 = await fetch ( `https://codeforces.com/api/user.info?handles=${codeforces}`);
 
-      if (!response.ok) {
+      if (!response.ok ) {
     setError("GitHub user not found");
     setLoading(false);
     return null;
   }
+  
 
     
     const data = await response.json();
@@ -58,6 +60,9 @@ function Profiles() {
     setLoading(false);
     return null;
     }
+
+    
+    
     
   };
   return (

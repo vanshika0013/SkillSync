@@ -1,7 +1,12 @@
 import "./Dashboard.css";
 import {useState , useEffect } from "react";
+import { FaQuoteLeft } from "react-icons/fa";
+import {useNavigate} from "react-router-dom";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../../firebase";
 
 function Dashboard() {
+  const navigate= useNavigate();
   console.log(import.meta.env.VITE_GEMINI_API_KEY);
   const hour= new Date().getHours();
   let greeting;
@@ -408,6 +413,27 @@ useEffect(()=> {
 
 }, []);
 
+const quotes = [
+  "Small progress is still progress",
+  "Consistency beats intensity",
+  "Stay curious. Keep building",
+  "Code a little Everyday",
+  "The expert in anything was once a beginner"
+];
+
+const randomIndex = Math.floor(Math.random()*quotes.length);
+
+const [email,setEmail] = useState("");
+useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, (user) => {
+    if (user) {
+      setEmail(user.email);
+    }
+  });
+
+  return () => unsubscribe();
+}, []);
+
   return (
     <div className="dashboard-page">
 
@@ -468,13 +494,13 @@ useEffect(()=> {
             <span>Projects</span>}
           </li>
 
-          <li>
+          <li onClick={()=> navigate("/notes")}>
             <span>📝</span>
             {!collapsed && 
-            <span>Notes</span>}
+            <span >Notes</span>}
           </li>
 
-          <li>
+          <li onClick={()=> navigate("/settings")}>
             <span>⚙️</span>
             {!collapsed && 
             <span>Settings</span>}
@@ -495,14 +521,14 @@ useEffect(()=> {
 
   {
     !collapsed &&
-    <div>
+    <div className="user-info">
       <h4>
         {githubData?.name ||
          githubData?.login}
       </h4>
 
       <p>
-        vanshika@example.com
+    {email}
       </p>
     </div>
   }
@@ -580,14 +606,16 @@ useEffect(()=> {
 
             <div className="stats-grid">
 
-              <div className="stat-card">
+              <div className="stat-card clickable" onClick={()=>navigate("/skillsection")}>
                 <h2>{skills.length}</h2>
                 <p>Skills Selected</p>
+                
               </div>
 
-              <div className="stat-card">
+              <div className="stat-card clickable" onClick={()=> navigate("/goals")}>
                 <h2>{goals.length}</h2>
                 <p>Goals Selected</p>
+                
               </div>
 
               <div className="stat-card">
@@ -848,7 +876,7 @@ useEffect(()=> {
                     "Mon",
                     "Tue",
                     "Wed",
-                    "Thurs",
+                    "Thu",
                     "Fri",
                     "Sat",
                     "Sun"
@@ -897,7 +925,7 @@ useEffect(()=> {
               <p>
                 • System Design
               </p>
-
+ 
             </section>
 
             {/* Quote */}
@@ -905,13 +933,13 @@ useEffect(()=> {
             <section className="quote-card">
 
               <h2>
-                🌱
+            <h2 className="quote-icon">
+              <FaQuoteLeft />
+            </h2>
               </h2>
 
               <p>
-                The best time to plant a tree
-                was 20 years ago.
-                The second best time is now.
+                {quotes[randomIndex]}
               </p>
 
             </section>
