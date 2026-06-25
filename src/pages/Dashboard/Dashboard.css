@@ -822,3 +822,110 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ===========================
+   Weekly Goals & Tasks
+=========================== */
+
+.goal-input-box,
+.task-input-box{
+    display:flex;
+    gap:12px;
+    margin:18px 0 22px;
+}
+
+.goal-input-box input,
+.task-input-box input[type="text"]{
+    flex:1;
+    padding:12px 16px;
+    border:none;
+    outline:none;
+    border-radius:12px;
+    background:#1b1d1f;
+    color:white;
+    font-size:15px;
+    border:1px solid rgba(255,255,255,0.08);
+    transition:.3s;
+}
+
+.goal-input-box input:focus,
+.task-input-box input[type="text"]:focus{
+    border-color:#6bbf8f;
+    box-shadow:0 0 12px rgba(107,191,143,.25);
+}
+
+.goal-input-box button,
+.task-input-box button{
+    background:#6bbf8f;
+    color:white;
+    border:none;
+    padding:0 22px;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:600;
+    transition:.3s;
+}
+
+.goal-input-box button:hover,
+.task-input-box button:hover{
+    background:#58ab7d;
+    transform:translateY(-2px);
+}
+
+.goal-item,
+.task-item{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    background:#1b1d1f;
+    padding:14px 18px;
+    border-radius:14px;
+    margin-bottom:12px;
+    border:1px solid rgba(255,255,255,.05);
+    transition:.3s;
+}
+
+.goal-item:hover,
+.task-item:hover{
+    border-color:#6bbf8f;
+    transform:translateY(-2px);
+}
+
+.goal-item input[type="checkbox"],
+.task-item input[type="checkbox"]{
+    width:18px;
+    height:18px;
+    accent-color:#6bbf8f;
+    cursor:pointer;
+}
+
+.goal-item span,
+.task-item span{
+    flex:1;
+    color:#e8e8e8;
+    font-size:15px;
+}
+
+.goal-item button,
+.task-item button{
+    width:34px;
+    height:34px;
+    border:none;
+    border-radius:10px;
+    background:rgba(255,70,70,.12);
+    color:#ff6868;
+    cursor:pointer;
+    font-size:15px;
+    transition:.3s;
+}
+
+.goal-item button:hover,
+.task-item button:hover{
+    background:#ff4d4d;
+    color:white;
+}
+
+.goal-item span[style],
+.task-item span[style]{
+    opacity:.65;
+}

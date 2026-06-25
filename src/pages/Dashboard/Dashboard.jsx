@@ -4,8 +4,94 @@ import { FaQuoteLeft } from "react-icons/fa";
 import {useNavigate} from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../firebase";
+import {useLocation} from "react-router-dom";
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+} from "recharts";
 
 function Dashboard() {
+  const resourceMap = {
+  React: [
+    {
+      title: "React Documentation",
+      link: "https://react.dev",
+    },
+    {
+      title: "React Crash Course",
+      link: "https://www.youtube.com/results?search_query=react+crash+course",
+    },
+  ],
+
+  JavaScript: [
+    {
+      title: "JavaScript.info",
+      link: "https://javascript.info",
+    },
+    {
+      title: "MDN JavaScript",
+      link: "https://developer.mozilla.org/en-US/docs/Web/JavaScript",
+    },
+  ],
+
+  HTML: [
+    {
+      title: "MDN HTML",
+      link: "https://developer.mozilla.org/en-US/docs/Web/HTML",
+    },
+  ],
+
+  CSS: [
+    {
+      title: "CSS Tricks",
+      link: "https://css-tricks.com",
+    },
+  ],
+
+  "Web Development": [
+    {
+      title: "freeCodeCamp",
+      link: "https://www.freecodecamp.org",
+    },
+  ],
+
+  "DSA & Algorithms": [
+    {
+      title: "LeetCode",
+      link: "https://leetcode.com",
+    },
+    {
+      title: "GeeksforGeeks DSA",
+      link: "https://www.geeksforgeeks.org/dsa/",
+    },
+  ],
+};
+
+
+
+  const [weeklyGoals, setWeeklyGoals] = useState(() => {
+  return (
+    JSON.parse(localStorage.getItem("weeklyGoals")) || [
+      {
+        id: 1,
+        text: "Solve 15 DSA Problems",
+        completed: false,
+      },
+      {
+        id: 2,
+        text: "Learn React Basics",
+        completed: false,
+      },
+    ]
+  );
+});
+
+const [goalInput, setGoalInput] = useState("");
+  const location = useLocation();
   const navigate= useNavigate();
   console.log(import.meta.env.VITE_GEMINI_API_KEY);
   const hour= new Date().getHours();
@@ -22,13 +108,20 @@ function Dashboard() {
 
   const githubData = 
   JSON.parse(localStorage.getItem("githubData")) || {};
-  const skills =
-  JSON.parse(localStorage.getItem("selectedSkills"));
+   const skills =
+  JSON.parse(localStorage.getItem("selectedSkills")) || [] ;
   const goals = 
-  JSON.parse(localStorage.getItem("selectedGoals"));
+  JSON.parse(localStorage.getItem("selectedGoals")) || [];
   const [roadmap,setRoadmap] = useState([]);
   const [loading, setLoading] = useState(false);
    const [collapsed, setCollapsed] = useState(false);
+   const recommendedResources = [
+  ...new Map(
+    skills
+      .flatMap(skill => resourceMap[skill] || [])
+      .map(resource => [resource.title, resource])
+  ).values(),
+];
 
   const handleGenerateRoadmap = () => {
 
@@ -412,6 +505,106 @@ useEffect(()=> {
   setVisitedDays(days);
 
 }, []);
+  const addGoal = () => {
+  if (!goalInput.trim()) return;
+
+  setWeeklyGoals([
+    ...weeklyGoals,
+    {
+      id: Date.now(),
+      text: goalInput,
+      completed: false,
+    },
+  ]);
+
+  setGoalInput("");
+};
+
+const toggleGoal = (id) => {
+  setWeeklyGoals(
+    weeklyGoals.map((goal) =>
+      goal.id === id
+        ? { ...goal, completed: !goal.completed }
+        : goal
+    )
+  );
+};
+
+const deleteGoal = (id) => {
+  setWeeklyGoals(
+    weeklyGoals.filter((goal) => goal.id !== id)
+  );
+};
+
+useEffect(() => {
+  localStorage.setItem(
+    "weeklyGoals",
+    JSON.stringify(weeklyGoals)
+  );
+}, [weeklyGoals]);
+const [tasks, setTasks] = useState(() => {
+  return (
+    JSON.parse(localStorage.getItem("tasks")) || []
+  );
+});
+const [taskInput, setTaskInput] = useState("");
+
+const addTask = () => {
+  if (!taskInput.trim()) return;
+
+  setTasks([
+    ...tasks,
+    {
+      id: Date.now(),
+      title: taskInput,
+      completed: false,
+    },
+  ]);
+
+  setTaskInput("");
+};
+
+const toggleTask = (id) => {
+  setTasks(
+    tasks.map((task) =>
+      task.id === id
+        ? { ...task, completed: !task.completed }
+        : task
+    )
+  );
+};
+
+const deleteTask = (id) => {
+  setTasks(
+    tasks.filter((task) => task.id !== id)
+  );
+};
+
+useEffect(() => {
+  localStorage.setItem(
+    "tasks",
+    JSON.stringify(tasks)
+  );
+}, [tasks]);
+
+const chartData = [
+  {
+    name: "Skills",
+    value: skills.length,
+  },
+  {
+    name: "Goals",
+    value: goals.length,
+  },
+  {
+    name: "Projects",
+    value: githubData?.public_repos || 0,
+  },
+  {
+    name: "Streak",
+    value: streak,
+  },
+];
 
 const quotes = [
   "Small progress is still progress",
@@ -606,13 +799,21 @@ useEffect(() => {
 
             <div className="stats-grid">
 
-              <div className="stat-card clickable" onClick={()=>navigate("/skillsection")}>
+              <div className="stat-card clickable" onClick={()=>navigate("/skillsection", {
+                state:{
+                  fromDashboard:true
+                },
+              }) }>
                 <h2>{skills.length}</h2>
                 <p>Skills Selected</p>
                 
               </div>
 
-              <div className="stat-card clickable" onClick={()=> navigate("/goals")}>
+              <div className="stat-card clickable" onClick={()=> navigate("/goals" , {
+                state:{
+                  fromDashboard:true
+                },
+              })}>
                 <h2>{goals.length}</h2>
                 <p>Goals Selected</p>
                 
@@ -649,21 +850,45 @@ useEffect(() => {
 
               </div>
 
-              <div className="goal-item">
-                ☑ Solve 15 DSA Problems
-              </div>
+             <div className="goal-input-box">
 
-              <div className="goal-item">
-                ☑ Learn React Basics
-              </div>
+  <input
+    type="text"
+    placeholder="Add weekly goal..."
+    value={goalInput}
+    onChange={(e) => setGoalInput(e.target.value)}
+  />
 
-              <div className="goal-item">
-                ☐ Build a Project
-              </div>
+  <button onClick={addGoal}>
+    Add
+  </button>
 
-              <div className="goal-item">
-                ☐ Read 2 Articles
-              </div>
+</div>
+
+              {weeklyGoals.map((goal)=>(
+  <div
+    className="goal-item"
+    key={goal.id}
+  >
+
+    <input
+      type="checkbox"
+      checked={goal.completed}
+      onChange={()=>toggleGoal(goal.id)}
+    />
+
+    <span>
+      {goal.text}
+    </span>
+
+    <button
+      onClick={()=>deleteGoal(goal.id)}
+    >
+      ❌
+    </button>
+
+  </div>
+))}
 
             </section>
 
@@ -745,21 +970,17 @@ useEffect(() => {
 
               <div className="resources-grid">
 
-                <div className="resource-card">
-                  React Documentation
-                </div>
-
-                <div className="resource-card">
-                  Array Problems
-                </div>
-
-                <div className="resource-card">
-                  React Crash Course
-                </div>
-
-                <div className="resource-card">
-                  Next.js Tutorial
-                </div>
+                {recommendedResources.map((resource, index) => (
+  <a
+    key={index}
+    href={resource.link}
+    target="_blank"
+    rel="noreferrer"
+    className="resource-card"
+  >
+    {resource.title}
+  </a>
+))}
 
               </div>
 
@@ -790,8 +1011,39 @@ useEffect(() => {
               </div>
 
               <div className="chart-placeholder">
+ <ResponsiveContainer
+               width="100%"
+               height={250}
+  >
 
-                Chart Here 📈
+              <BarChart data={chartData}>
+
+              <XAxis
+              dataKey="name"
+              tick={{ fill: "#b8d8c0" }}
+/>
+
+              <YAxis />
+
+              <Tooltip
+               contentStyle={{
+                background: "#122018",
+                border: "1px solid #7CFC90",
+                borderRadius: "10px",
+                color: "#fff",
+  }}
+/>
+
+              <Bar
+               dataKey="value"
+               fill="#7CFC90"
+               radius={[10, 10, 0, 0]}
+/>
+      
+
+              </BarChart>
+
+              </ResponsiveContainer>
 
               </div>
 
@@ -914,17 +1166,48 @@ useEffect(() => {
 
               </div>
 
-              <p>
-                • React Project
-              </p>
+              <div className="task-input-box">
 
-              <p>
-                • DSA Practice
-              </p>
+  <input
+    type="text"
+    placeholder="Add task..."
+    value={taskInput}
+    onChange={(e) => setTaskInput(e.target.value)}
+  />
 
-              <p>
-                • System Design
-              </p>
+  <button onClick={addTask}>
+    Add
+  </button>
+
+</div>
+
+{tasks.map((task) => (
+
+  <div className="task-item" key={task.id}>
+
+    <input
+      type="checkbox"
+      checked={task.completed}
+      onChange={() => toggleTask(task.id)}
+    />
+
+    <span
+      style={{
+        textDecoration: task.completed
+          ? "line-through"
+          : "none"
+      }}
+    >
+      {task.title}
+    </span>
+
+    <button onClick={() => deleteTask(task.id)}>
+      ✕
+    </button>
+
+  </div>
+
+))}
  
             </section>
 

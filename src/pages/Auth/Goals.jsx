@@ -5,16 +5,25 @@ import { FaSearch } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import "./Skillsection.jsx";
 import "./Profiles.jsx";
+import {useLocation} from "react-router-dom";
 function Goals(){
+  
   function handleContinue() {
+    
   localStorage.setItem(
     "selectedGoals",
     JSON.stringify(selectedGoals)
   );
 
-  navigate("/profiles");
+  if(location.state?.fromDashboard){
+    navigate("/dashboard");
+  }
+  else{
+    navigate("/profiles");
+  }
 }
   const navigate = useNavigate();
+  const location = useLocation();
   const goalCards =[
     {
       icon:"🎯",

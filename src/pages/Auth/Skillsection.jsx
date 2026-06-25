@@ -5,9 +5,11 @@ import { useState , useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
 import "./Goals.jsx";
 import { useNavigate } from "react-router-dom";
+import {useLocation} from "react-router-dom";
 
 function Skillsection() {
   const navigate = useNavigate();
+  const location = useLocation();
   const skills = [
     "React",
     "JavaScript",
@@ -125,7 +127,12 @@ function handleContinue() {
       "selectedSkills",
       JSON.stringify(selectedSkills)
     );
-    navigate("/goals");
+    if(location.state?.fromDashboard){
+      navigate("/dashboard");
+    }
+    else{
+      navigate("/goals");
+    }
   }
 
 const handleClear = () => {
