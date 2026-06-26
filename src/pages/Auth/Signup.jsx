@@ -59,7 +59,7 @@ function Signup() {
 
   alert("Account Created Successfully!");
 
-  navigate("/skill-selection");
+  navigate("/skillsection");
 }
 catch (error) {
   alert(error.message);
