@@ -2,7 +2,13 @@ import "./Settings.css";
 import { useState, useEffect } from "react";
 import { auth } from "../../firebase";
 import { useNavigate } from "react-router-dom";
-import { signOut } from "firebase/auth";
+import { signOut, onAuthStateChanged } from "firebase/auth";
+import {
+  saveUserData,
+  getUserData,
+  removeUserData,
+  clearUserData,
+} from "../../utils/storage";
 
 function Settings() {
   const navigate = useNavigate();
@@ -15,71 +21,67 @@ function Settings() {
   const [notes, setNotes] = useState([]);
   const [achievements, setAchievements] = useState(0);
 
+  // ── Load ALL user data inside ONE onAuthStateChanged listener ────────────────
   useEffect(() => {
-    const githubData = JSON.parse(localStorage.getItem("githubData")) || {};
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) return;
 
-    setName(githubData.name || "");
-    setGithub(localStorage.getItem("github") || "");
-    setAchievements(githubData.public_repos || 0);
+      setEmail(user.email);
 
-    setCodeforces(localStorage.getItem("codeforces") || "");
+      const githubData = getUserData("githubData") || {};
+      setName(githubData.name || "");
+      setAchievements(githubData.public_repos || 0);
+
+      setGithub(getUserData("github") || "");
+      setCodeforces(getUserData("codeforces") || "");
+
+      setSkills(getUserData("selectedSkills") || []);
+      setGoals(getUserData("selectedGoals") || []);
+      setNotes(getUserData("notes") || []);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    if (auth.currentUser) {
-      setEmail(auth.currentUser.email);
+  async function saveChanges() {
+    try {
+      saveUserData("github", github);
+      saveUserData("codeforces", codeforces);
+
+      const response = await fetch(
+        `https://api.github.com/users/${github}`
+      );
+
+      if (!response.ok) {
+        alert("GitHub user not found");
+        return;
+      }
+
+      const data = await response.json();
+      data.name = name || data.name;
+
+      saveUserData("githubData", data);
+      alert("Changes saved successfully!");
+      navigate("/dashboard");
+    } catch (error) {
+      console.log(error);
+      alert("Something went wrong.");
     }
-  }, []);
-
-  function saveChanges() {
-    localStorage.setItem("github", github);
-    localStorage.setItem("codeforces", codeforces);
-    const githubData = JSON.parse(localStorage.getItem("githubData")) || {};
-
-    githubData.name = name;
-
-    localStorage.setItem("githubData", JSON.stringify(githubData));
   }
 
-  useEffect(() => {
-    const savedSkills =
-      JSON.parse(localStorage.getItem("selectedSkills")) || [];
-
-    const savedGoals = JSON.parse(localStorage.getItem("selectedGoals")) || [];
-
-    const savedNotes = JSON.parse(localStorage.getItem("notes")) || [];
-
-    setSkills(savedSkills || []);
-    setGoals(savedGoals || []);
-    setNotes(savedNotes || []);
-  }, []);
   function clearNotes() {
     setNotes([]);
-    localStorage.removeItem("notes");
+    removeUserData("notes");
   }
 
   async function clearData() {
     const confirmDelete = window.confirm(
-      "Are you sure you want to clear all your skillsync data ?",
+      "Are you sure you want to clear all your skillsync data ?"
     );
-    if (!confirmDelete) {
-      return;
-    }
-    const keys = [
-      "selectedSkills",
-      "selectedGoals",
-      "notes",
-      "codeforces",
-      "githubData",
-      "github",
-      "streak",
-      "visitedDays",
-      "lastVisit",
-    ];
+    if (!confirmDelete) return;
 
-    keys.forEach((key) => {
-      localStorage.removeItem(key);
-    });
+    clearUserData();
+
     try {
       await signOut(auth);
       navigate("/");
@@ -87,6 +89,15 @@ function Settings() {
       console.log(error);
     }
   }
+
+  async function handleLogout() {
+  try {
+    await signOut(auth);
+    navigate("/");
+  } catch (error) {
+    console.log(error);
+  }
+}
 
   return (
     <div className="settings-page">
@@ -159,49 +170,6 @@ function Settings() {
           </div>
         </section>
 
-        {/* Learning Preferences */}
-
-        {/* <section className="settings-card">
-
-  <div className="section-title">
-    <h3>📚 Learning Preferences</h3>
-    <p>Select the skills you want SkillSync to focus on.</p>
-  </div>
-
-  <div className="skills-grid">
-
-    <div className="skill-option active">
-      Web Development
-    </div>
-
-    <div className="skill-option active">
-      DSA
-    </div>
-
-    <div className="skill-option">
-      AI / ML
-    </div>
-
-    <div className="skill-option">
-      Cloud
-    </div>
-
-    <div className="skill-option">
-      Cyber Security
-    </div>
-
-    <div className="skill-option">
-      DevOps
-    </div>
-
-  </div>
-
-  <button className="save-btn">
-    Save Preferences
-  </button>
-
-</section> */}
-
         {/* Appearance */}
 
         <section className="settings-card">
@@ -228,30 +196,24 @@ function Settings() {
 
           <div className="notification-item">
             <span>Study Reminders</span>
-
             <label className="switch">
               <input type="checkbox" />
-
               <span className="slider"></span>
             </label>
           </div>
 
           <div className="notification-item">
             <span>Achievment Alerts</span>
-
             <label className="switch">
               <input type="checkbox" />
-
               <span className="slider"></span>
             </label>
           </div>
 
           <div className="notification-item">
             <span>Roadmap Updates</span>
-
             <label className="switch">
               <input type="checkbox" />
-
               <span className="slider"></span>
             </label>
           </div>
@@ -271,12 +233,12 @@ function Settings() {
             </div>
 
             <div className="stat-card">
-              <h2> {goals.length} </h2>
+              <h2>{goals.length}</h2>
               <p>Goals</p>
             </div>
 
             <div className="stat-card">
-              <h2> {notes.length} </h2>
+              <h2>{notes.length}</h2>
               <p>Notes</p>
             </div>
 
@@ -295,18 +257,18 @@ function Settings() {
           </div>
 
           <div className="data-buttons">
-            <button className="secondary-btn" onClick={clearNotes}>
-              Clear Notes
-            </button>
+  <button className="secondary-btn" onClick={clearNotes}>
+    Clear Notes
+  </button>
 
-            {/* <button className="warning-btn">
-      Reset Journey
-    </button> */}
+  <button className="danger-btn" onClick={clearData}>
+    Clear All Data
+  </button>
 
-            <button className="danger-btn" onClick={clearData}>
-              Clear All Data
-            </button>
-          </div>
+  <button className="logout-btn" onClick={handleLogout}>
+    Logout
+  </button>
+</div>
         </section>
       </div>
     </div>

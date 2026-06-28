@@ -1,15 +1,19 @@
 import skillSectionbg from "../../assets/skil-sectionbg.png";
 import "./Skillsection.css";
 import computer from "../../assets/computer.png";
-import { useState , useEffect } from "react";
+import { useState, useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
 import "./Goals.jsx";
 import { useNavigate } from "react-router-dom";
-import {useLocation} from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../../firebase";
+import { saveUserData, getUserData } from "../../utils/storage";
 
 function Skillsection() {
   const navigate = useNavigate();
   const location = useLocation();
+
   const skills = [
     "React",
     "JavaScript",
@@ -23,130 +27,72 @@ function Skillsection() {
     "AI/ML",
     "Data Science",
     "Cyber Security",
-    "Web Development"
+    "Web Development",
   ];
 
   const skillCards = [
-  {
-    icon: "🌐",
-    title: "Web Development",
-    desc: "Build modern websites and web applications."
-  },
-  {
-    icon: "📊",
-    title: "Data Science",
-    desc: "Analyze data and build powerful models."
-  },
-  {
-    icon: "🧠",
-    title: "AI / Machine Learning",
-    desc: "Create intelligent systems and AI solutions."
-  },
-  {
-    icon: "🛡️",
-    title: "Cyber Security",
-    desc: "Learn to protect systems and ethical hacking."
-  },
-  {
-    icon: "📱",
-    title: "Mobile Development",
-    desc: "Build mobile apps for Android and iOS."
-  },
-  {
-    icon: "🎨",
-    title: "UI / UX Design",
-    desc: "Design beautiful and user-friendly interfaces."
-  },
-  {
-    icon: "☁️",
-    title: "Cloud Computing",
-    desc: "Learn cloud platforms and deployment."
-  },
-  {
-    icon: "🎮",
-    title: "Game Development",
-    desc: "Create games and interactive experiences."
-  },
-  {
-    icon: "💻",
-    title: "DSA & Algorithms",
-    desc: "Master problem solving and algorithms."
-  },
-  {
-    icon: "∞",
-    title: "DevOps",
-    desc: "Automate, deploy and manage applications."
-  },
-  {
-    icon: "📦",
-    title: "Blockchain",
-    desc: "Learn blockchain and decentralized systems."
-  },
-  {
-    icon: "💼",
-    title: "Product Management",
-    desc: "Learn to build and manage successful products."
-  }
-];
+    { icon: "🌐", title: "Web Development", desc: "Build modern websites and web applications." },
+    { icon: "📊", title: "Data Science", desc: "Analyze data and build powerful models." },
+    { icon: "🧠", title: "AI / Machine Learning", desc: "Create intelligent systems and AI solutions." },
+    { icon: "🛡️", title: "Cyber Security", desc: "Learn to protect systems and ethical hacking." },
+    { icon: "📱", title: "Mobile Development", desc: "Build mobile apps for Android and iOS." },
+    { icon: "🎨", title: "UI / UX Design", desc: "Design beautiful and user-friendly interfaces." },
+    { icon: "☁️", title: "Cloud Computing", desc: "Learn cloud platforms and deployment." },
+    { icon: "🎮", title: "Game Development", desc: "Create games and interactive experiences." },
+    { icon: "💻", title: "DSA & Algorithms", desc: "Master problem solving and algorithms." },
+    { icon: "∞", title: "DevOps", desc: "Automate, deploy and manage applications." },
+    { icon: "📦", title: "Blockchain", desc: "Learn blockchain and decentralized systems." },
+    { icon: "💼", title: "Product Management", desc: "Learn to build and manage successful products." },
+  ];
 
   const [search, setSearch] = useState("");
-  const [showSuggestions, setShowSuggestions] =
-    useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedSkills, setSelectedSkills] = useState([]);
 
   const filteredSkills = skills.filter((skill) =>
-    skill
-      .toLowerCase()
-      .includes(search.toLowerCase())
+    skill.toLowerCase().includes(search.toLowerCase())
   );
-  const [selectedSkills,setSelectedSkills]= useState([]);
-  useEffect(() => {
-  const savedSkills =
-    JSON.parse(
-      localStorage.getItem("selectedSkills")
-    ) || [];
 
-  setSelectedSkills(savedSkills);
-}, []);
+  // ── Load saved skills only after Firebase confirms the user ──────────────────
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const savedSkills = getUserData("selectedSkills") || [];
+        setSelectedSkills(savedSkills);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
   const handleSkillClick = (skill) => {
-  if (selectedSkills.includes(skill)) {
-    setSelectedSkills(
-      selectedSkills.filter(
-        (s) => s !== skill
-      )
-    );
-  } else {
-    setSelectedSkills([
-      ...selectedSkills,
-      skill
-    ]);
-  }
-};
-console.log(selectedSkills);
-function handleContinue() {
-    localStorage.setItem(
-      "selectedSkills",
-      JSON.stringify(selectedSkills)
-    );
-    if(location.state?.fromDashboard){
-      navigate("/dashboard");
+    if (selectedSkills.includes(skill)) {
+      setSelectedSkills(selectedSkills.filter((s) => s !== skill));
+    } else {
+      setSelectedSkills([...selectedSkills, skill]);
     }
-    else{
+  };
+
+  console.log(selectedSkills);
+
+  function handleContinue() {
+    saveUserData("selectedSkills", selectedSkills);
+    if (location.state?.fromDashboard) {
+      navigate("/dashboard");
+    } else {
       navigate("/goals");
     }
   }
 
-const handleClear = () => {
-  setSelectedSkills([]);
-};
+  const handleClear = () => {
+    setSelectedSkills([]);
+  };
 
   return (
     <div className="sectionpage">
       <div className="top-section">
 
         <div className="logo">
-          <span className="logo-icon">
-            &lt;/&gt;
-          </span>
+          <span className="logo-icon">&lt;/&gt;</span>
           SkillSync
         </div>
 
@@ -174,11 +120,7 @@ const handleClear = () => {
             </p>
           </div>
 
-          <img
-            className="image"
-            src={computer}
-            alt="computer"
-          />
+          <img className="image" src={computer} alt="computer" />
 
         </div>
 
@@ -186,20 +128,14 @@ const handleClear = () => {
 
           <div className="search-box">
 
-            <FaSearch
-              className="search-icon"
-            />
+            <FaSearch className="search-icon" />
 
             <input
               type="text"
               placeholder="Search skills..."
               value={search}
-              onChange={(e) =>
-                setSearch(e.target.value)
-              }
-              onFocus={() =>
-                setShowSuggestions(true)
-              }
+              onChange={(e) => setSearch(e.target.value)}
+              onFocus={() => setShowSuggestions(true)}
               onBlur={() =>
                 setTimeout(() => {
                   setShowSuggestions(false);
@@ -211,20 +147,18 @@ const handleClear = () => {
 
           {showSuggestions && (
             <ul className="suggestions">
-
               {filteredSkills.map((skill) => (
                 <li
                   key={skill}
                   onClick={() => {
-                      setSearch(skill);
-                      handleSkillClick(skill);
-                      setShowSuggestions(false);
-                    }}
+                    setSearch(skill);
+                    handleSkillClick(skill);
+                    setShowSuggestions(false);
+                  }}
                 >
                   {skill}
                 </li>
               ))}
-
             </ul>
           )}
 
@@ -232,102 +166,83 @@ const handleClear = () => {
 
         <div className="skills-section">
 
-  {/* SKILLS GRID */}
+          {/* SKILLS GRID */}
 
-  <div className="skills-grid">
+          <div className="skills-grid">
 
-  {skillCards.map((card) => (
+            {skillCards.map((card) => (
+              <div
+                key={card.title}
+                className={
+                  selectedSkills.includes(card.title)
+                    ? "skill-card selected"
+                    : "skill-card"
+                }
+                onClick={() => handleSkillClick(card.title)}
+              >
 
-    <div
-      key={card.title}
-      className={
-        selectedSkills.includes(card.title)
-          ? "skill-card selected"
-          : "skill-card"
-      }
-      onClick={() =>
-        handleSkillClick(card.title)
-      }
-    >
+                <div className="skill-icon">{card.icon}</div>
+                <h4>{card.title}</h4>
+                <p>{card.desc}</p>
 
-      <div className="skill-icon">
-        {card.icon}
-      </div>
+                {selectedSkills.includes(card.title) && (
+                  <div className="tick">✓</div>
+                )}
 
-      <h4>{card.title}</h4>
+              </div>
+            ))}
 
-      <p>{card.desc}</p>
-
-      {
-        selectedSkills.includes(
-          card.title
-        ) &&
-        (
-          <div className="tick">
-            ✓
           </div>
-        )
-      }
 
-    </div>
+          {/* SELECTED SKILLS */}
 
-  ))}
+          <div className="selected-skills">
 
-</div>
+            <h3>
+              {selectedSkills.length}{" "}
+              {selectedSkills.length === 1 || 0 ? "Skill" : "Skills"}{" "}
+              Selected
+            </h3>
 
-  {/* SELECTED SKILLS */}
+            <div className="selected-container">
 
-  <div className="selected-skills">
+              {selectedSkills.map((skill) => (
+                <div className="selected-pill" key={skill}>
+                  {skill}
+                </div>
+              ))}
 
-  <h3>
-    {selectedSkills.length}{" "}
-    {selectedSkills.length === 1 || 0
-      ? "Skill"
-      : "Skills"}{" "}
-    Selected
-  </h3>
+              <button className="clear-btn" onClick={handleClear}>
+                Clear All
+              </button>
 
-  <div className="selected-container">
+            </div>
 
-    {selectedSkills.map((skill) => (
-      <div
-        className="selected-pill"
-        key={skill}
-      >
-        {skill}
-      </div>
-    ))}
+          </div>
 
-    <button className="clear-btn" onClick={handleClear}>
-      Clear All
-    </button>
+          {/* BUTTONS */}
 
-  </div>
+          <div className="bottom-buttons">
 
-</div>
+            <button className="back-btn" onClick={() => navigate("/login")}>
+              ← Back
+            </button>
 
-  {/* BUTTONS */}
+            <button
+              className="continue-btn"
+              disabled={selectedSkills.length === 0}
+              onClick={handleContinue}
+            >
+              Continue →
+            </button>
 
-  <div className="bottom-buttons">
+          </div>
 
-    <button className="back-btn" onClick={() => navigate("/login")}>
-      ← Back
-    </button>
-
-    <button className="continue-btn" disabled={selectedSkills.length==0} onClick={handleContinue}>
-      Continue →
-    </button>
-
-  </div>
-
-</div>
-
-  </div>
         </div>
 
-         
+      </div>
 
-        
+    </div>
   );
 }
 

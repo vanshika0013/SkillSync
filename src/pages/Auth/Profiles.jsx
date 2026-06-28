@@ -3,6 +3,7 @@ import { FaGithub } from "react-icons/fa";
 import source from "../../assets/sources.png";
 import {useState} from "react";
 import {useNavigate} from "react-router-dom";
+import { saveUserData } from "../../utils/storage";
 
 function Profiles() {
   const navigate=useNavigate();
@@ -17,19 +18,9 @@ function Profiles() {
         if(!data){
           return;
         }
-      localStorage.setItem(
-        "github",
-        github
-      );
-      localStorage.setItem(
-        "codeforces",
-        codeforces
-      );
-
-      localStorage.setItem(
-      "githubData",
-      JSON.stringify(data)
-  );
+      saveUserData("github", github);
+      saveUserData("codeforces", codeforces);
+      saveUserData("githubData", data);
 
       navigate("/dashboard");   
   };

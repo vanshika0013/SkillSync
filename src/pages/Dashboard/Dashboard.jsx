@@ -1,5 +1,5 @@
 import "./Dashboard.css";
-import {useState , useEffect } from "react";
+import {useState , useEffect, useRef } from "react";
 import { FaQuoteLeft } from "react-icons/fa";
 import {useNavigate} from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
@@ -13,619 +13,362 @@ import {
   YAxis,
   Tooltip,
 } from "recharts";
+import {
+  getUserData,
+  saveUserData
+} from "../../utils/storage";
 
 function Dashboard() {
-  const resourceMap = {
-  React: [
-    {
-      title: "React Documentation",
-      link: "https://react.dev",
-    },
-    {
-      title: "React Crash Course",
-      link: "https://www.youtube.com/results?search_query=react+crash+course",
-    },
-  ],
+    const [githubData, setGithubData] = useState({});
+  const [skills, setSkills] = useState([]);
+  const [goals, setGoals] = useState([]);
+  const [email, setEmail] = useState("");
 
-  JavaScript: [
-    {
-      title: "JavaScript.info",
-      link: "https://javascript.info",
-    },
-    {
-      title: "MDN JavaScript",
-      link: "https://developer.mozilla.org/en-US/docs/Web/JavaScript",
-    },
-  ],
-
-  HTML: [
-    {
-      title: "MDN HTML",
-      link: "https://developer.mozilla.org/en-US/docs/Web/HTML",
-    },
-  ],
-
-  CSS: [
-    {
-      title: "CSS Tricks",
-      link: "https://css-tricks.com",
-    },
-  ],
-
-  "Web Development": [
-    {
-      title: "freeCodeCamp",
-      link: "https://www.freecodecamp.org",
-    },
-  ],
-
-  "DSA & Algorithms": [
-    {
-      title: "LeetCode",
-      link: "https://leetcode.com",
-    },
-    {
-      title: "GeeksforGeeks DSA",
-      link: "https://www.geeksforgeeks.org/dsa/",
-    },
-  ],
-};
-
-
-
-  const [weeklyGoals, setWeeklyGoals] = useState(() => {
-  return (
-    JSON.parse(localStorage.getItem("weeklyGoals")) || [
-      {
-        id: 1,
-        text: "Solve 15 DSA Problems",
-        completed: false,
-      },
-      {
-        id: 2,
-        text: "Learn React Basics",
-        completed: false,
-      },
-    ]
-  );
-});
-
-const [goalInput, setGoalInput] = useState("");
-  const location = useLocation();
-  const navigate= useNavigate();
-  console.log(import.meta.env.VITE_GEMINI_API_KEY);
-  const hour= new Date().getHours();
-  let greeting;
-  if( hour<12){
-    greeting="Good Morning!";
-  }
-  else if (hour<17){
-    greeting="Good Afternoon!";
-  }
-  else{
-    greeting="Good Evening!";
-  }
-
-  const githubData = 
-  JSON.parse(localStorage.getItem("githubData")) || {};
-   const skills =
-  JSON.parse(localStorage.getItem("selectedSkills")) || [] ;
-  const goals = 
-  JSON.parse(localStorage.getItem("selectedGoals")) || [];
-  const [roadmap,setRoadmap] = useState([]);
+  const [roadmap, setRoadmap] = useState([]);
   const [loading, setLoading] = useState(false);
-   const [collapsed, setCollapsed] = useState(false);
-   const recommendedResources = [
-  ...new Map(
-    skills
-      .flatMap(skill => resourceMap[skill] || [])
-      .map(resource => [resource.title, resource])
-  ).values(),
-];
+  const [collapsed, setCollapsed] = useState(false);
+  const [streak, setStreak] = useState(1);
+  const [weeklyGoals, setWeeklyGoals] = useState([]);
+  const [visitedDays, setVisitedDays] = useState([]);
+  const [tasks, setTasks] = useState([]);
 
+  // Guards the persist effects — prevents overwriting saved data before auth loads
+  const authReady = useRef(false);
+
+  const [goalInput, setGoalInput] = useState("");
+  const [taskInput, setTaskInput] = useState("");
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // ── Greeting ───────────────────────────────────────────────────────────────
+  const hour = new Date().getHours();
+  let greeting;
+  if (hour < 12) {
+    greeting = "Good Morning!";
+  } else if (hour < 17) {
+    greeting = "Good Afternoon!";
+  } else {
+    greeting = "Good Evening!";
+  }
+
+  // ── Resource map (unchanged) ───────────────────────────────────────────────
+  const resourceMap = {
+    React: [
+      { title: "React Documentation", link: "https://react.dev" },
+      { title: "React Crash Course", link: "https://www.youtube.com/results?search_query=react+crash+course" },
+    ],
+    JavaScript: [
+      { title: "JavaScript.info", link: "https://javascript.info" },
+      { title: "MDN JavaScript", link: "https://developer.mozilla.org/en-US/docs/Web/JavaScript" },
+    ],
+    HTML: [
+      { title: "MDN HTML", link: "https://developer.mozilla.org/en-US/docs/Web/HTML" },
+    ],
+    CSS: [
+      { title: "CSS Tricks", link: "https://css-tricks.com" },
+    ],
+    "Web Development": [
+      { title: "freeCodeCamp", link: "https://www.freecodecamp.org" },
+    ],
+    "DSA & Algorithms": [
+      { title: "LeetCode", link: "https://leetcode.com" },
+      { title: "GeeksforGeeks DSA", link: "https://www.geeksforgeeks.org/dsa/" },
+    ],
+  };
+
+  const recommendedResources = [
+    ...new Map(
+      skills
+        .flatMap((skill) => resourceMap[skill] || [])
+        .map((resource) => [resource.title, resource])
+    ).values(),
+  ];
+
+  // ── Single onAuthStateChanged — loads ALL user data ────────────────────────
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) return;
+
+      setEmail(user.email);
+
+      // ── GitHub data ──
+      const savedGithub = getUserData("githubData");
+      setGithubData(savedGithub || {});
+
+      // ── Skills & Goals ──
+      setSkills(getUserData("selectedSkills") || []);
+      setGoals(getUserData("selectedGoals") || []);
+
+      // ── Weekly Goals ──
+      const savedGoals = getUserData("weeklyGoals");
+      if (savedGoals) {
+        setWeeklyGoals(savedGoals);
+      } else {
+        setWeeklyGoals([
+          { id: 1, text: "Solve 15 DSA Problems", completed: false },
+          { id: 2, text: "Learn React Basics", completed: false },
+        ]);
+      }
+
+      // ── Tasks ──
+      const savedTasks = getUserData("tasks");
+      if (savedTasks) {
+        setTasks(savedTasks);
+      }
+
+      // ── Streak (via helper functions, same logic) ──
+      const today = new Date().toDateString();
+      const lastVisit = getUserData("lastVisit");
+      let currentStreak = Number(getUserData("streak")) || 1;
+
+      if (!lastVisit) {
+        saveUserData("lastVisit", today);
+        saveUserData("streak", 1);
+        setStreak(1);
+      } else {
+        const last = new Date(lastVisit);
+        const current = new Date(today);
+        const diff = Math.floor((current - last) / (1000 * 60 * 60 * 24));
+
+        if (diff === 1) {
+          currentStreak++;
+          saveUserData("streak", currentStreak);
+          saveUserData("lastVisit", today);
+        } else if (diff > 1) {
+          currentStreak = 1;
+          saveUserData("streak", 1);
+          saveUserData("lastVisit", today);
+        }
+
+        setStreak(currentStreak);
+      }
+
+      // ── Visited Days (via helper functions, same logic) ──
+      const currentDay = new Date().toLocaleDateString("en-US", { weekday: "short" });
+      let days = getUserData("visitedDays") || [];
+
+      if (!days.includes(currentDay)) {
+        days.push(currentDay);
+        saveUserData("visitedDays", days);
+      }
+
+      setVisitedDays(days);
+
+      // Mark auth as ready — persist effects may now safely save
+      authReady.current = true;
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // ── Persist weeklyGoals on change ─────────────────────────────────────────
+  // authReady guard prevents overwriting saved data with [] on first render
+  useEffect(() => {
+    if (!authReady.current) return;
+    saveUserData("weeklyGoals", weeklyGoals);
+  }, [weeklyGoals]);
+
+  // ── Persist tasks on change ───────────────────────────────────────────────
+  useEffect(() => {
+    if (!authReady.current) return;
+    saveUserData("tasks", tasks);
+  }, [tasks]);
+
+  // ── Roadmap generation (completely unchanged) ──────────────────────────────
   const handleGenerateRoadmap = () => {
-
-    console.log(skills);
-    console.log(goals);
-  setLoading(true);
-  let generatedRoadmap = [];
+    // console.log(skills);
+    // console.log(goals);
+    setLoading(true);
+    let generatedRoadmap = [];
 
     if (skills.includes("Web Development")) {
-  generatedRoadmap.push({
-    phase:`Phase ${generatedRoadmap.length + 1}`,
-    title: "Web Development Path",
-    topics: [
-      "HTML",
-      "CSS",
-      "JavaScript",
-      "Responsive Design",
-      "Git & GitHub",
-      "React Basics",
-    ],
-    project:
-      "Build a Personal Portfolio Website",
-  });
-}
-
-if (skills.includes("Data Science")) {
-  generatedRoadmap.push({
-    phase:`Phase ${generatedRoadmap.length + 1}`,
-    title: "Data Science Path",
-    topics: [
-      "Python",
-      "NumPy",
-      "Pandas",
-      "Matplotlib",
-      "Data Cleaning",
-      "Statistics",
-    ],
-    project:
-      "Build a Data Analysis Dashboard",
-  });
-}
-
-if (skills.includes("AI / Machine Learning")) {
-  generatedRoadmap.push({
-    phase: `Phase ${generatedRoadmap.length + 1}`,
-    title: "AI & Machine Learning",
-    topics: [
-      "Python",
-      "Machine Learning Basics",
-      "Scikit-Learn",
-      "Deep Learning",
-      "TensorFlow",
-      "Model Deployment",
-    ],
-    project:
-      "Build an Image Classification App",
-  });
-}
-
-if (skills.includes("Cyber Security")) {
-  generatedRoadmap.push({
-    phase: `Phase ${generatedRoadmap.length + 1}`,
-    title: "Cyber Security",
-    topics: [
-      "Networking",
-      "Linux",
-      "Ethical Hacking",
-      "Cryptography",
-      "OWASP",
-      "Penetration Testing",
-    ],
-    project:
-      "Build a Password Security Checker",
-  });
-}
-
-if (skills.includes("Mobile Development")) {
-  generatedRoadmap.push({
-    phase: `Phase ${generatedRoadmap.length + 1}`,
-    title: "Mobile Development",
-    topics: [
-      "Flutter",
-      "Dart",
-      "UI Design",
-      "Firebase",
-      "State Management",
-      "API Integration",
-    ],
-    project:
-      "Build a ToDo Mobile App",
-  });
-}
-
-if (skills.includes("UI / UX Design")) {
-  generatedRoadmap.push({
-    phase: `Phase ${generatedRoadmap.length + 1}`,
-    title: "UI/UX Design",
-    topics: [
-      "Design Principles",
-      "Color Theory",
-      "Typography",
-      "Wireframing",
-      "Figma",
-      "Prototyping",
-    ],
-    project:
-      "Design a Food Delivery App Interface",
-  });
-}
-
-if (skills.includes("Cloud Computing")) {
-  generatedRoadmap.push({
-    phase: `Phase ${generatedRoadmap.length + 1}`,
-    title: "Cloud Computing",
-    topics: [
-      "AWS Basics",
-      "Linux",
-      "Docker",
-      "CI/CD",
-      "Cloud Deployment",
-      "DevOps Basics",
-    ],
-    project:
-      "Deploy a Full Stack Application",
-  });
-}
-
-if (skills.includes("Game Development")) {
-  generatedRoadmap.push({
-    phase: `Phase ${generatedRoadmap.length + 1}`,
-    title: "Game Development",
-    topics: [
-      "Unity",
-      "C#",
-      "Game Physics",
-      "Animations",
-      "Game Design",
-      "Optimization",
-    ],
-    project:
-      "Build a 2D Platformer Game",
-  });
-}
-
-if (skills.includes("DSA & Algorithms")) {
-  generatedRoadmap.push({
-    phase: `Phase ${generatedRoadmap.length + 1}`,
-    title: "DSA Mastery",
-    topics: [
-      "Arrays",
-      "Strings",
-      "Linked Lists",
-      "Trees",
-      "Graphs",
-      "Dynamic Programming",
-    ],
-    project:
-      "Solve 200+ Coding Problems",
-  });
-}
-
-if (skills.includes("DevOps")) {
-  generatedRoadmap.push({
-    phase: `Phase ${generatedRoadmap.length + 1}`,
-    title: "DevOps",
-    topics: [
-      "Linux",
-      "Docker",
-      "Git",
-      "GitHub Actions",
-      "Jenkins",
-      "Kubernetes",
-    ],
-    project:
-      "Build a CI/CD Pipeline",
-  });
-}
-
-if (skills.includes("Blockchain")) {
-  generatedRoadmap.push({
-    phase: `Phase ${generatedRoadmap.length + 1}`,
-    title: "Blockchain Development",
-    topics: [
-      "Solidity",
-      "Ethereum",
-      "Smart Contracts",
-      "Web3",
-      "DApps",
-      "Security",
-    ],
-    project:
-      "Build a Voting DApp",
-  });
-}
-
-if (skills.includes("Product Management")) {
-  generatedRoadmap.push({
-    phase: `Phase ${generatedRoadmap.length + 1}`,
-    title: "Product Management",
-    topics: [
-      "Market Research",
-      "User Stories",
-      "Roadmapping",
-      "Agile",
-      "Analytics",
-      "Leadership",
-    ],
-    project:
-      "Create a Product Requirement Document",
-  });
-}
-
-if (goals.includes("Get Internship")) {
-  generatedRoadmap.push({
-    phase: "Career Phase",
-    title: "Internship Preparation",
-    topics: [
-      "Resume Building",
-      "GitHub Portfolio",
-      "Projects",
-      "LinkedIn",
-      "Interview Preparation",
-    ],
-    project:
-      "Build and Deploy 3 Portfolio Projects",
-  });
-}
-
-if (goals.includes("Crack Placements")) {
-  generatedRoadmap.push({
-    phase: "Placement Phase",
-    title: "Placement Preparation",
-    topics: [
-      "DSA",
-      "OOPs",
-      "DBMS",
-      "Operating Systems",
-      "Computer Networks",
-      "Mock Interviews",
-    ],
-    project:
-      "Solve 150+ DSA Questions",
-  });
-}
-
-if (generatedRoadmap.length === 0) {
-  generatedRoadmap.push({
-    phase: "Getting Started",
-    title: "Begin Your Journey",
-    topics: [
-      "Choose a skill",
-      "Practice consistently",
-      "Build projects",
-      "Stay curious",
-    ],
-    project:
-      "Create your first beginner project",
-  });
-}
-
-  setRoadmap(generatedRoadmap);
-
-  setLoading(false);
-};
-
-const [streak,setStreak] = useState(1);
-
-useEffect(()=> {
-  const today = new Date().toDateString();
-
-  const lastVisit= localStorage.getItem("lastVisit");
-  let currentStreak= Number(localStorage.getItem("streak")) || 1;
-
-   if (!lastVisit) {
-    localStorage.setItem(
-      "lastVisit",
-      today
-    );
-
-    localStorage.setItem(
-      "streak",
-      1
-    );
-
-    setStreak(1);
-    return;
-  }
- const last =
-  new Date(lastVisit);
-
-  const current =
-  new Date(today);
-
-  const diff =
-  Math.floor(
-    (
-      current - last
-    )
-    /
-    (
-      1000
-      *
-      60
-      *
-      60
-      *
-      24
-    )
-  );
-
-  if (diff === 1) {
-
-    currentStreak++;
-
-    localStorage.setItem(
-      "streak",
-      currentStreak
-    );
-
-    localStorage.setItem(
-      "lastVisit",
-      today
-    );
-
-  }
-
-  else if (diff > 1) {
-
-    currentStreak = 1;
-
-    localStorage.setItem(
-      "streak",
-      1
-    );
-
-    localStorage.setItem(
-      "lastVisit",
-      today
-    );
-  }
-
-  setStreak(
-    currentStreak
-  );
-}, []);
-
-    const[visitedDays,setVisitedDays]=useState([]);
-
-  useEffect(() => {
-
-  const currentDay =
-    new Date()
-      .toLocaleDateString(
-        "en-US",
-        {
-          weekday:"short"
-        }
-      );
-
-  let days =
-    JSON.parse(
-      localStorage.getItem(
-        "visitedDays"
-      )
-    ) || [];
-
-  if (
-    !days.includes(
-      currentDay
-    )
-  ) {
-
-    days.push(currentDay);
-
-    localStorage.setItem(
-      "visitedDays",
-      JSON.stringify(days)
-    );
-  }
-
-  setVisitedDays(days);
-
-}, []);
-  const addGoal = () => {
-  if (!goalInput.trim()) return;
-
-  setWeeklyGoals([
-    ...weeklyGoals,
-    {
-      id: Date.now(),
-      text: goalInput,
-      completed: false,
-    },
-  ]);
-
-  setGoalInput("");
-};
-
-const toggleGoal = (id) => {
-  setWeeklyGoals(
-    weeklyGoals.map((goal) =>
-      goal.id === id
-        ? { ...goal, completed: !goal.completed }
-        : goal
-    )
-  );
-};
-
-const deleteGoal = (id) => {
-  setWeeklyGoals(
-    weeklyGoals.filter((goal) => goal.id !== id)
-  );
-};
-
-useEffect(() => {
-  localStorage.setItem(
-    "weeklyGoals",
-    JSON.stringify(weeklyGoals)
-  );
-}, [weeklyGoals]);
-const [tasks, setTasks] = useState(() => {
-  return (
-    JSON.parse(localStorage.getItem("tasks")) || []
-  );
-});
-const [taskInput, setTaskInput] = useState("");
-
-const addTask = () => {
-  if (!taskInput.trim()) return;
-
-  setTasks([
-    ...tasks,
-    {
-      id: Date.now(),
-      title: taskInput,
-      completed: false,
-    },
-  ]);
-
-  setTaskInput("");
-};
-
-const toggleTask = (id) => {
-  setTasks(
-    tasks.map((task) =>
-      task.id === id
-        ? { ...task, completed: !task.completed }
-        : task
-    )
-  );
-};
-
-const deleteTask = (id) => {
-  setTasks(
-    tasks.filter((task) => task.id !== id)
-  );
-};
-
-useEffect(() => {
-  localStorage.setItem(
-    "tasks",
-    JSON.stringify(tasks)
-  );
-}, [tasks]);
-
-const chartData = [
-  {
-    name: "Skills",
-    value: skills.length,
-  },
-  {
-    name: "Goals",
-    value: goals.length,
-  },
-  {
-    name: "Projects",
-    value: githubData?.public_repos || 0,
-  },
-  {
-    name: "Streak",
-    value: streak,
-  },
-];
-
-const quotes = [
-  "Small progress is still progress",
-  "Consistency beats intensity",
-  "Stay curious. Keep building",
-  "Code a little Everyday",
-  "The expert in anything was once a beginner"
-];
-
-const randomIndex = Math.floor(Math.random()*quotes.length);
-
-const [email,setEmail] = useState("");
-useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth, (user) => {
-    if (user) {
-      setEmail(user.email);
+      generatedRoadmap.push({
+        phase: `Phase ${generatedRoadmap.length + 1}`,
+        title: "Web Development Path",
+        topics: ["HTML", "CSS", "JavaScript", "Responsive Design", "Git & GitHub", "React Basics"],
+        project: "Build a Personal Portfolio Website",
+      });
     }
-  });
 
-  return () => unsubscribe();
-}, []);
+    if (skills.includes("Data Science")) {
+      generatedRoadmap.push({
+        phase: `Phase ${generatedRoadmap.length + 1}`,
+        title: "Data Science Path",
+        topics: ["Python", "NumPy", "Pandas", "Matplotlib", "Data Cleaning", "Statistics"],
+        project: "Build a Data Analysis Dashboard",
+      });
+    }
+
+    if (skills.includes("AI / Machine Learning")) {
+      generatedRoadmap.push({
+        phase: `Phase ${generatedRoadmap.length + 1}`,
+        title: "AI & Machine Learning",
+        topics: ["Python", "Machine Learning Basics", "Scikit-Learn", "Deep Learning", "TensorFlow", "Model Deployment"],
+        project: "Build an Image Classification App",
+      });
+    }
+
+    if (skills.includes("Cyber Security")) {
+      generatedRoadmap.push({
+        phase: `Phase ${generatedRoadmap.length + 1}`,
+        title: "Cyber Security",
+        topics: ["Networking", "Linux", "Ethical Hacking", "Cryptography", "OWASP", "Penetration Testing"],
+        project: "Build a Password Security Checker",
+      });
+    }
+
+    if (skills.includes("Mobile Development")) {
+      generatedRoadmap.push({
+        phase: `Phase ${generatedRoadmap.length + 1}`,
+        title: "Mobile Development",
+        topics: ["Flutter", "Dart", "UI Design", "Firebase", "State Management", "API Integration"],
+        project: "Build a ToDo Mobile App",
+      });
+    }
+
+    if (skills.includes("UI / UX Design")) {
+      generatedRoadmap.push({
+        phase: `Phase ${generatedRoadmap.length + 1}`,
+        title: "UI/UX Design",
+        topics: ["Design Principles", "Color Theory", "Typography", "Wireframing", "Figma", "Prototyping"],
+        project: "Design a Food Delivery App Interface",
+      });
+    }
+
+    if (skills.includes("Cloud Computing")) {
+      generatedRoadmap.push({
+        phase: `Phase ${generatedRoadmap.length + 1}`,
+        title: "Cloud Computing",
+        topics: ["AWS Basics", "Linux", "Docker", "CI/CD", "Cloud Deployment", "DevOps Basics"],
+        project: "Deploy a Full Stack Application",
+      });
+    }
+
+    if (skills.includes("Game Development")) {
+      generatedRoadmap.push({
+        phase: `Phase ${generatedRoadmap.length + 1}`,
+        title: "Game Development",
+        topics: ["Unity", "C#", "Game Physics", "Animations", "Game Design", "Optimization"],
+        project: "Build a 2D Platformer Game",
+      });
+    }
+
+    if (skills.includes("DSA & Algorithms")) {
+      generatedRoadmap.push({
+        phase: `Phase ${generatedRoadmap.length + 1}`,
+        title: "DSA Mastery",
+        topics: ["Arrays", "Strings", "Linked Lists", "Trees", "Graphs", "Dynamic Programming"],
+        project: "Solve 200+ Coding Problems",
+      });
+    }
+
+    if (skills.includes("DevOps")) {
+      generatedRoadmap.push({
+        phase: `Phase ${generatedRoadmap.length + 1}`,
+        title: "DevOps",
+        topics: ["Linux", "Docker", "Git", "GitHub Actions", "Jenkins", "Kubernetes"],
+        project: "Build a CI/CD Pipeline",
+      });
+    }
+
+    if (skills.includes("Blockchain")) {
+      generatedRoadmap.push({
+        phase: `Phase ${generatedRoadmap.length + 1}`,
+        title: "Blockchain Development",
+        topics: ["Solidity", "Ethereum", "Smart Contracts", "Web3", "DApps", "Security"],
+        project: "Build a Voting DApp",
+      });
+    }
+
+    if (skills.includes("Product Management")) {
+      generatedRoadmap.push({
+        phase: `Phase ${generatedRoadmap.length + 1}`,
+        title: "Product Management",
+        topics: ["Market Research", "User Stories", "Roadmapping", "Agile", "Analytics", "Leadership"],
+        project: "Create a Product Requirement Document",
+      });
+    }
+
+    if (goals.includes("Get Internship")) {
+      generatedRoadmap.push({
+        phase: "Career Phase",
+        title: "Internship Preparation",
+        topics: ["Resume Building", "GitHub Portfolio", "Projects", "LinkedIn", "Interview Preparation"],
+        project: "Build and Deploy 3 Portfolio Projects",
+      });
+    }
+
+    if (goals.includes("Crack Placements")) {
+      generatedRoadmap.push({
+        phase: "Placement Phase",
+        title: "Placement Preparation",
+        topics: ["DSA", "OOPs", "DBMS", "Operating Systems", "Computer Networks", "Mock Interviews"],
+        project: "Solve 150+ DSA Questions",
+      });
+    }
+
+    if (generatedRoadmap.length === 0) {
+      generatedRoadmap.push({
+        phase: "Getting Started",
+        title: "Begin Your Journey",
+        topics: ["Choose a skill", "Practice consistently", "Build projects", "Stay curious"],
+        project: "Create your first beginner project",
+      });
+    }
+
+    setRoadmap(generatedRoadmap);
+    setLoading(false);
+  };
+
+  // ── Weekly Goals handlers ──────────────────────────────────────────────────
+  const addGoal = () => {
+    if (!goalInput.trim()) return;
+    setWeeklyGoals([...weeklyGoals, { id: Date.now(), text: goalInput, completed: false }]);
+    setGoalInput("");
+  };
+
+  const toggleGoal = (id) => {
+    setWeeklyGoals(weeklyGoals.map((goal) => (goal.id === id ? { ...goal, completed: !goal.completed } : goal)));
+  };
+
+  const deleteGoal = (id) => {
+    setWeeklyGoals(weeklyGoals.filter((goal) => goal.id !== id));
+  };
+
+  // ── Task handlers ──────────────────────────────────────────────────────────
+  const addTask = () => {
+    if (!taskInput.trim()) return;
+    setTasks([...tasks, { id: Date.now(), title: taskInput, completed: false }]);
+    setTaskInput("");
+  };
+
+  const toggleTask = (id) => {
+    setTasks(tasks.map((task) => (task.id === id ? { ...task, completed: !task.completed } : task)));
+  };
+
+  const deleteTask = (id) => {
+    setTasks(tasks.filter((task) => task.id !== id));
+  };
+
+  // ── Chart data (unchanged) ─────────────────────────────────────────────────
+  const chartData = [
+    { name: "Skills", value: skills.length },
+    { name: "Goals", value: goals.length },
+    { name: "Projects", value: githubData?.public_repos || 0 },
+    { name: "Streak", value: streak },
+  ];
+
+  // ── Quotes (unchanged) ────────────────────────────────────────────────────
+  const quotes = [
+    "Small progress is still progress",
+    "Consistency beats intensity",
+    "Stay curious. Keep building",
+    "Code a little Everyday",
+    "The expert in anything was once a beginner",
+  ];
+
+  const randomIndex = Math.floor(Math.random() * quotes.length);
 
   return (
     <div className="dashboard-page">
@@ -710,6 +453,7 @@ useEffect(() => {
       "https://i.pravatar.cc/100"
     }
     alt=""
+    onClick={()=> navigate("/settings")}
   />
 
   {
@@ -750,6 +494,7 @@ useEffect(() => {
               <img
                 src={githubData?.avatar_url || "https://i.pravatar.cc/100"}
                 alt=""
+                onClick={()=> navigate("/settings")}
               />
 
               <span>
@@ -1216,9 +961,9 @@ useEffect(() => {
             <section className="quote-card">
 
               <h2>
-            <h2 className="quote-icon">
+           <div className="quote-icon">
               <FaQuoteLeft />
-            </h2>
+            </div>
               </h2>
 
               <p>
